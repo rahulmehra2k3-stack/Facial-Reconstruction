@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Facial Reconstruction – Notes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;1,400&family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#eef0ed;--surface:#fff;--ink:#14202b;--mute:#53616c;--line:#cdd5d3;--acc:#0b7482;--acc-soft:#d5ecee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1319;--surface:#151d26;--ink:#e6ebe8;--mute:#9aa8b1;--line:#27333e;--acc:#6fd3df;--acc-soft:#16343a}}
+:root[data-theme="dark"]{--bg:#0d1319;--surface:#151d26;--ink:#e6ebe8;--mute:#9aa8b1;--line:#27333e;--acc:#6fd3df;--acc-soft:#16343a}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(70px + env(safe-area-inset-top,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Figtree,system-ui,sans-serif}
+h1,h2,h3{font-family:Newsreader,Georgia,serif;font-weight:400;line-height:1.15;margin:0}
+h1{font-size:clamp(42px,8vw,72px)}
+h2{font-size:clamp(30px,5vw,42px);margin-bottom:6px}
+h3{font-size:25px;margin:44px 0 10px}
+h4{font:600 16px Figtree,sans-serif;margin:22px 0 6px;color:var(--acc)}
+p{margin:0 0 12px;max-width:64ch}
+ul{margin:0 0 14px;padding-left:22px;color:var(--ink)}
+li{margin-bottom:5px;max-width:66ch}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;height:3px;background:var(--acc);width:0;z-index:20}
+header,main{max-width:860px;margin:0 auto;padding:0 20px}
+.top{display:flex;justify-content:space-between;align-items:center;padding-top:20px}
+.top button,.top a{border:1px solid var(--line);background:none;color:var(--ink);border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer;text-decoration:none}
+.lede{color:var(--mute);font-size:19px;margin-top:12px}
+header{padding-bottom:30px}
+header h1{margin-top:44px}
+.index{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 26px;margin-bottom:20px}
+.index h2{font-size:28px;margin-bottom:12px}
+.index ol{list-style:none;margin:0;padding:0;counter-reset:a}
+.index>ol>li{counter-increment:a;margin:0 0 14px;max-width:none}
+.index>ol>li>a{font:22px Newsreader,serif;text-decoration:none}
+.index>ol>li>a::before{content:counter(a)".";color:var(--acc);margin-right:8px}
+.index ol ol{counter-reset:b;margin-top:4px;padding-left:28px}
+.index ol ol li{counter-increment:b;margin:0;font-size:16px}
+.index ol ol a{text-decoration:none;color:var(--mute);display:inline-block;padding:2px 0}
+.index ol ol a::before{content:counter(a)"."counter(b)"  ";color:var(--acc);font-size:14px}
+.index a:hover{color:var(--acc)}
+section{padding:56px 0 20px;border-top:1px solid var(--line)}
+.sn{font:italic 18px Newsreader,serif;color:var(--acc)}
+.back{float:right;font-size:14px;color:var(--mute);text-decoration:none;margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin-bottom:14px}
+.card h4{margin-top:0}
+.card ul:last-child,.card p:last-child{margin-bottom:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.note{border-left:4px solid var(--acc);background:var(--acc-soft);padding:14px 18px;border-radius:0 12px 12px 0;margin:16px 0}
+.note b{color:var(--acc)}
+.pill{display:inline-block;font-size:14px;padding:3px 12px;border-radius:20px;background:var(--acc-soft);color:var(--acc);margin:0 6px 6px 0}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:30px;padding:4px;margin:10px 0 18px;background:var(--surface)}
+.tabs button{border:0;background:none;color:var(--mute);padding:8px 22px;border-radius:26px;cursor:pointer;font:500 16px Figtree,sans-serif}
+.tabs button[aria-selected=true]{background:var(--acc);color:var(--bg)}
+[hidden]{display:none!important}
+.sw{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sw button{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;cursor:pointer;color:var(--ink);font:inherit}
+.sw button:hover,.sw button[aria-expanded=true]{border-color:var(--acc)}
+.sw strong{display:block;font:22px Newsreader,serif}
+.sw span{display:block;font-size:15px;color:var(--mute);max-height:0;overflow:hidden;transition:max-height .3s}
+.sw button[aria-expanded=true] span{max-height:220px;margin-top:6px}
+.steps{display:grid;grid-template-columns:250px 1fr;gap:24px;margin-top:16px}
+.rail{list-style:none;margin:0;padding:0}
+.rail button{width:100%;text-align:left;background:none;border:0;border-left:3px solid var(--line);padding:8px 14px;color:var(--mute);cursor:pointer;font:500 15px Figtree,sans-serif}
+.rail button.done{border-color:var(--acc)}
+.rail button[aria-current=true]{border-color:var(--acc);color:var(--ink);background:var(--acc-soft)}
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;min-height:270px;display:flex;flex-direction:column}
+.detail .n{font:italic 60px Newsreader,serif;color:var(--acc);line-height:1}
+.detail h4{font:26px Newsreader,serif;color:var(--ink);margin:6px 0 10px}
+.detail ul{color:var(--mute)}
+.pager{margin-top:auto;display:flex;align-items:center;gap:12px}
+.pager button{border:1px solid var(--line);background:none;color:var(--ink);padding:7px 18px;border-radius:24px;cursor:pointer;font:inherit;font-size:15px}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager div{flex:1;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.pager i{display:block;height:100%;background:var(--acc);transition:width .3s}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 20px;margin-bottom:10px}
+summary{cursor:pointer;font:21px Newsreader,serif;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--acc);font-size:26px;line-height:1}
+details[open] summary::after{content:"\2212"}
+details ul,details p{margin-top:10px;color:var(--mute);font-size:16px}
+.flow{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:12px 0 18px}
+.flow li{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:15px;max-width:none;flex:1 1 140px}
+.flow li b{display:block;color:var(--acc);font:italic 20px Newsreader,serif}
+footer{max-width:860px;margin:40px auto 0;text-align:center;color:var(--mute);padding:30px 20px 60px;font-size:15px;border-top:1px solid var(--line)}
+#up{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:24px;padding:8px 16px;cursor:pointer;font:inherit;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:15}
+#up.on{opacity:1;pointer-events:auto}
+@media (max-width:760px){.grid,.sw,.steps{grid-template-columns:1fr}.rail{display:flex;overflow-x:auto}.rail li{flex:none}.rail button{border-left:0;border-bottom:3px solid var(--line);white-space:nowrap;width:auto}.rail button.done,.rail button[aria-current=true]{border-bottom-color:var(--acc)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<header id="top">
+  <div class="top"><span class="sn">Forensic anthropology notes</span><button id="theme" aria-label="Toggle light or dark theme">Theme</button></div>
+  <h1>Facial Reconstruction</h1>
+  <p class="lede">Study notes, sorted by heading. Start with the index and tap any line to jump.</p>
+</header>
+
+<main>
+<nav class="index" aria-label="Index">
+  <h2>Index</h2>
+  <ol>
+    <li><a href="#s1">Facial reconstruction</a>
+      <ol><li><a href="#s1a">2D reconstruction</a></li><li><a href="#s1b">3D reconstruction</a></li></ol></li>
+    <li><a href="#s2">10 steps of facial reconstruction</a>
+      <ol><li><a href="#s2a">Importance in forensic anthropology</a></li><li><a href="#s2b">Limitations</a></li></ol></li>
+    <li><a href="#s3">Superimposition</a>
+      <ol><li><a href="#s3a">General</a></li><li><a href="#s3b">3D skull model</a></li><li><a href="#s3c">3D skull model via clinical imaging</a></li><li><a href="#s3d">Craniofacial superimposition</a></li></ol></li>
+  </ol>
+</nav>
+
+<!-- 1 -->
+<section id="s1">
+  <a class="back" href="#top">Back to index</a>
+  <h2><span class="sn">1&nbsp;</span>Facial reconstruction</h2>
+  <div class="note"><b>Definition.</b> The amalgamation of artistry with forensic science, osteology, osteometry and anthropology to recreate the face of an individual from skeletal remains.</div>
+  <p>It is of two types: 2D and 3D reconstruction.</p>
+  <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-t="t2">2D reconstruction</button><button role="tab" aria-selected="false" data-t="t3">3D reconstruction</button></div>
+
+  <div id="t2" role="tabpanel">
+    <h3 id="s1a" style="margin-top:6px">1.1 2D reconstruction</h3>
+    <ul>
+      <li>Sketching of facial features, either by hand or by using software.</li>
+      <li>Economical, fast and efficient.</li>
+      <li>Majorly affected by the skill of the artist, the quality of the original photograph and the completeness of the skull.</li>
+    </ul>
+    <h4>Method</h4>
+    <ul>
+      <li>Developed by Karen T. Taylor in the 1930s.</li>
+      <li>Tissue depth markers are adhered at anthropological landmarks on the unidentified skull, which is then photographed.</li>
+      <li>Lateral photographic plates are the foundation for facial drawings done on transparent vellum.</li>
+    </ul>
+    <div class="grid">
+      <div class="card"><h4>ARFS</h4><p>Computer Assisted Recovery Enhanced System</p></div>
+      <div class="card"><h4>FACES</h4><p>Forensic Anthropology Computer Enhancement System</p></div>
+    </div>
+    <h4>About the software</h4>
+    <ul>
+      <li>Capture and digitise radiographs, photographs and skull images to electronically overlay facial features and tissue depths.</li>
+      <li>Produce better images than hand drawing and speed up the reconstruction.</li>
+    </ul>
+  </div>
+
+  <div id="t3" role="tabpanel" hidden>
+    <h3 style="margin-top:6px">1.2 3D reconstruction</h3>
+    <ul>
+      <li>Expensive and time consuming.</li>
+      <li>The skull sits on a workable stand so it can be tilted and turned in all directions.</li>
+      <li>Clay modelling and computer software can both be used.</li>
+      <li>With software, scanned photograph features of the unidentified remains and stock photos of other facial reconstructions are manipulated.</li>
+    </ul>
+    <div class="note"><b>Frankfort Horizontal Position (FHP).</b> Ideally the skull is held in this position. The anatomical reference line connects the lowest point of the eye socket to the upper margin of the ear canal.</div>
+    <h4>Popular 3D software (tap to open)</h4>
+    <div class="sw">
+      <button aria-expanded="false"><strong>FaceGen</strong><span>Generates realistic 3D human faces from one or more photographs or scanned data, with controls for age, race, gender and shape adjustments.</span></button>
+      <button aria-expanded="false"><strong>Agisoft Metashape</strong><span>Applies photogrammetry algorithms to multi-view image sets, aligning cameras and calculating triangle meshes to reconstruct physical faces.</span></button>
+      <button aria-expanded="false"><strong>Geomagic Freeform</strong><span>Pairs digital sculpting with haptic touch devices so operators can feel virtual surfaces and layer soft tissue over 3D skull data.</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <a class="back" href="#top">Back to index</a>
+  <h2><span class="sn">2&nbsp;</span>10 steps of facial reconstruction</h2>
+  <ul>
+    <li>The skull is the most valuable remain.</li>
+    <li>It may or may not be covered with soft tissue.</li>
+    <li>If there is minimal or no soft tissue covering, the skull is thoroughly examined.</li>
+  </ul>
+  <div class="steps">
+    <ol class="rail" id="rail" style="list-style:none;margin:0;padding:0"></ol>
+    <div class="detail" id="detail" aria-live="polite"></div>
+  </div>
+
+  <h3 id="s2a">2.1 Importance in forensic anthropology</h3>
+  <details><summary>1. Identification of unknown remains</summary><ul><li>Helps estimate the facial appearance of an unidentified person from their skull.</li><li>The reconstructed face can be compared with missing-person photographs to assist identification.</li></ul></details>
+  <details><summary>2. Helps in recognition</summary><ul><li>Gives a visual representation of the face that relatives, friends or the public may recognise.</li><li>Recognition can give investigators valuable information, although scientific methods are required for confirmation.</li></ul></details>
+  <details><summary>3. Useful in decomposed or degenerated bodies</summary><ul><li>Useful when a body is decomposed, skeletonised, burned or damaged, making facial recognition difficult.</li><li>The skull can be used to reconstruct an approximate face even when the original facial tissues are no longer present.</li></ul></details>
+  <details><summary>4. Helps in generating leads</summary><ul><li>Reconstructed images can be circulated through newspapers, social media and police networks to seek information.</li><li>Public recognition may provide leads about the person's identity, family or background.</li></ul></details>
+  <details><summary>5. Use of modern techniques (CT scan, MRI, X-ray)</summary><ul><li>CT scans, X-rays and suitable MRI data help examine anatomical structures and support digital facial reconstruction.</li><li>Computer software and 3D modelling improve visualisation and documentation, making reconstruction more efficient and reproducible.</li></ul></details>
+
+  <h3 id="s2b">2.2 Limitations</h3>
+  <details><summary>1. Insufficient tissue thickness data</summary><ul><li>Some facial bones may be unavailable, so the reconstruction is only partly completed. Example: with a missing mandible, only a partial reconstruction is possible.</li><li>There is limited data on average facial tissue thickness by age and sex.</li></ul></details>
+  <details><summary>2. Lack of methodological standardisation</summary><ul><li>A major limitation.</li><li>A single, official method of facial reconstruction is required.</li></ul></details>
+  <details><summary>3. Major setback in eyes, nose and hairstyle</summary><ul><li>These are the features most likely to be recalled by a witness.</li></ul></details>
+  <details><summary>4. Subjectivity</summary><ul><li>The position and general shape of facial features are determined mainly by the skull.</li><li>Because of artistic subjectivity, the reconstruction reveals only the type of face the person had.</li></ul></details>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <a class="back" href="#top">Back to index</a>
+  <h2><span class="sn">3&nbsp;</span>Superimposition</h2>
+  <p>Facial reconstruction through superimposition.</p>
+
+  <h3 id="s3a" style="margin-top:20px">3.1 General</h3>
+  <ul>
+    <li>Comes under the techniques of forensic visual reconstruction.</li>
+    <li>A technique by which a recovered skull can be matched with photographs. Very helpful for identification.</li>
+    <li>A more recent photograph is better. One lateral-view photograph can be used.</li>
+  </ul>
+  <h4>Process</h4>
+  <ol class="flow">
+    <li><b>1</b>Prepare two negatives: one of the person, one of the skull.</li>
+    <li><b>2</b>Magnify appropriately for maximum alignment, so interpupillary distance matches exactly.</li>
+    <li><b>3</b>Place the negatives over each other.</li>
+    <li><b>4</b>Compare points, photograph and analyse for similarities and dissimilarities.</li>
+  </ol>
+  <h4>Points compared</h4>
+  <p><span class="pill">Canthion</span><span class="pill">Nasion</span><span class="pill">Nasal spine</span><span class="pill">Supra-orbital ridges</span><span class="pill">Angle of jaw</span><span class="pill">Teeth</span> and others.</p>
+  <h4>When the original skull is not accessible</h4>
+  <ul><li>In some circumstances photographs and X-rays may be the only available information, and access to the original specimen may be restricted due to legal matters, inaccessibility, destruction and damage.</li></ul>
+  <div class="note"><b>Camera setup.</b> Ideally the skull is in the Frankfort Horizontal plane. For 35 mm photography, a lens with a focal length of 100 to 200 mm and a camera position of no less than 12 ft (3 m) from the skull will avoid distortion.</div>
+  <h4>When the original skull is accessible</h4>
+  <ul><li>The forensic facial anthropologist should take scaling measurements.</li><li>If possible, tissue depth markers are attached to the skull before the image is produced.</li><li>If not, a scale can be included with some tissue depth markers to indicate overlays superimposed onto images of the skull.</li></ul>
+
+  <h3 id="s3b">3.2 3D skull model</h3>
+  <ul>
+    <li>Used when the original sample is not accessible, directly or via 3D clinical imaging. The 3D model is produced from 2D data such as radiographs and photographs.</li>
+    <li>These serve as templates, and multiple views are aligned using cranial points as registration marks.</li>
+    <li>Computer modelling software then creates a 3D model, distorting a template mesh to reproduce skull morphology.</li>
+    <li>Extrapolation of surface morphology between views is inevitable. The more views available, the more accurate the 3D skull model.</li>
+  </ul>
+
+  <h3 id="s3c">3.3 3D skull model via clinical imaging</h3>
+  <ul>
+    <li>Where soft tissues are present, cross-sectional data is created by CT scan, or surface scans can be used, to produce a 3D digital model of the skull.</li>
+    <li>With CT data, slice thickness, scan plane, spatial resolution, filters and angle of rotation all affect the resulting 3D model.</li>
+    <li>Dental fillings and appliances cause artefacts and may need manual intervention.</li>
+  </ul>
+  <h4>Software renders CT cross-sections as 3D models in three stages</h4>
+  <ol class="flow">
+    <li><b>Segmentation</b>Isolation of tissue by thresholding.</li>
+    <li><b>Interpolation</b>Between slices, to create a smooth surface.</li>
+    <li><b>Illumination</b>Of the surface.</li>
+  </ol>
+  <h4>Surface scanners</h4>
+  <p><span class="pill">Lasers</span><span class="pill">Photographic projection</span><span class="pill">Holographic projection</span> all create 3D models.</p>
+
+  <h3 id="s3d">3.4 Craniofacial superimposition</h3>
+  <ul>
+    <li>Creates a photographic image of the skull that is superimposed on an antemortem photo of the person.</li>
+    <li>Using a camera solves some problems of direct cranial reconstruction, such as tissue thickness and the artist's ability.</li>
+    <li>It creates new problems, mainly how to photograph the skull in the exact position and at the same distance as the antemortem photo.</li>
+    <li>Images comprise wave fronts of reflected or emitted energy captured by a camera system and recorded on film, magnetic media, optical disc and so on.</li>
+    <li>The use of CCTV for security has increased the use of video image analysis in support of crime investigation.</li>
+    <li>Identification is most often achieved by facial comparison: the image of an offender is compared systematically to that of a suspect.</li>
+  </ul>
+  <div class="grid">
+    <div class="card"><h4>Identification</h4><p>Occurs when there is no doubt that person A and person B are one and the same. Only achieved with a unique identifying mark, or when similarities are numerous enough to be overwhelming.</p></div>
+    <div class="card"><h4>Recognition</h4><p>Occurs when similarities are strong enough that someone who knows the person well, or has studied the image in detail, believes the subjects could be one and the same.</p></div>
+  </div>
+</section>
+</main>
+<footer>Facial Reconstruction · study notes</footer>
+<button id="up" onclick="location.hash='top'">Index</button>
+
+<script>
+(function(){
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+try{var sv=localStorage.getItem('frn-theme');if(sv)document.documentElement.setAttribute('data-theme',sv)}catch(e){}
+$('#theme').onclick=function(){var c=document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');var n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('frn-theme',n)}catch(e){}};
+$$('.tabs button').forEach(function(b){b.onclick=function(){$$('.tabs button').forEach(function(x){x.setAttribute('aria-selected',x===b)});$('#t2').hidden=b.dataset.t!=='t2';$('#t3').hidden=b.dataset.t!=='t3'}});
+$$('.sw button').forEach(function(b){b.onclick=function(){b.setAttribute('aria-expanded',b.getAttribute('aria-expanded')!=='true')}});
+// jumping to 2D / 3D index links opens the right tab
+$$('a[href="#s1a"],a[href="#s1b"]').forEach(function(a){a.addEventListener('click',function(){var t=a.getAttribute('href')==='#s1a'?'t2':'t3';$('.tabs [data-t="'+t+'"]').click()})});
+// progress + back to index
+var bar=$('#bar'),up=$('#up');
+function sc(){var h=document.documentElement,m=h.scrollHeight-h.clientHeight;bar.style.width=(m>0?h.scrollTop/m*100:0)+'%';up.className=h.scrollTop>600?'on':''}
+addEventListener('scroll',sc,{passive:true});sc();
+// steps
+var S=[
+['Examine the skull',[ 'Bony pathologies','Ruggedness of muscle attachments','Unusual landmarks','Wear of occlusal surfaces','Profile of the mandible','Symmetry of nasal bones and dentition'],'These are the main features to focus on, but not limited to these.'],
+['Clean and repair',[],'After complete examination, the skull is cleaned. Broken or damaged areas are repaired with wax. Wax is also used to reattach the mandible, based on alignment of the teeth.'],
+['Place the mandible without teeth',[],'In absence of teeth, the approximate vertical dimension between mandible and maxilla is measured, then the mandible is reattached.'],
+['Fill the openings',[],'Modelling clay is filled into the nasal openings. Artificial eyes are inserted into the orbits, between the superior and inferior orbital rims.'],
+['Cast and mark 21 landmarks',[],'A plaster cast of the skull is made. Following reference data, coloured plastics or coloured ends of safety matches are attached at 21 landmark areas after the cast sets. They represent approximate facial tissue thickness for people of the same sex, age and race as the remains.'],
+['Layer the facial muscles',['Temporalis','Masseter','Buccinator','Occipito-frontalis','Soft tissue on the neck'],''],
+['Reconstruct nose and lips',[],'Width of the lips is as wide as the interpupillary distance. This distance is significantly affected by age, sex and race.'],
+['Nose reconstruction',[],'The most difficult part, due to limited underlying bone. Nasal spine, width and aperture are measured while constructing the nasal profile.'],
+['Shape the nasal bridge',[],'A block of clay of proper length is placed on the nasal spine. Remaining nasal tissue is filled using tissue markers as a guide for the nose bridge. Below the bottom of the nasal aperture the alae are created, then blended with the nose to give a proper round shape.'],
+['Flesh the face',[],'Soft tissues are added around the eyes and facial muscles, followed by the ear. Clay is added until the tissue thickness markers are covered and any other specific detail is added. This is known as fleshing of the face.']
+];
+var rail=$('#rail'),det=$('#detail'),cur=0;
+S.forEach(function(s,i){var li=document.createElement('li'),b=document.createElement('button');b.textContent=(i+1)+'. '+s[0];b.onclick=function(){cur=i;draw()};li.appendChild(b);rail.appendChild(li)});
+function draw(){
+  var s=S[cur];
+  $$('button',rail).forEach(function(b,i){b.setAttribute('aria-current',i===cur);b.className=i<cur?'done':''});
+  var h='<div class="n">'+(cur+1)+'</div><h4>'+s[0]+'</h4>';
+  if(s[1].length)h+='<ul>'+s[1].map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul>';
+  if(s[2])h+='<p style="color:var(--mute)">'+s[2]+'</p>';
+  h+='<div class="pager"><button id="pv"'+(cur?'':' disabled')+'>Previous</button><div><i style="width:'+((cur+1)/S.length*100)+'%"></i></div><button id="nx"'+(cur<S.length-1?'':' disabled')+'>Next</button></div>';
+  det.innerHTML=h;
+  $('#pv').onclick=function(){cur--;draw()};$('#nx').onclick=function(){cur++;draw()};
+}
+draw();
+})();
+</script>
+</body>
+</html>
